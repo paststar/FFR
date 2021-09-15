@@ -12,13 +12,18 @@ def show(num):
     # img_512=cv2.imread(imges_path[num][1])
     # skeleton=cv2.imread(skeleton_path[num],0)
     QCA_img = cv2.imread((os.path.join('..','2nd data',patend_ids[num],'AP','AP_QCA.bmp')))
-    img_512 = cv2.imread((os.path.join('..','2nd data',patend_ids[num],'AP','AP_contrast.bmp')))
+    #img_512 = cv2.imread((os.path.join('..','2nd data',patend_ids[num],'AP','AP_contrast.bmp')))
+
+    img_512 = cv2.imread((os.path.join('..', '2nd data', patend_ids[num], 'AP', 'AP_reg.png')))
+    img_512 = cv2.resize(img_512,(512,512))
+    print("reg_img!!!!!!!!!!!!!!!!!!")
+
     skeleton = cv2.imread(os.path.join('..',"generated data",patend_ids[num],"skeleton.png"),0)
 
     QCA_crop,_ = make_mask(QCA_img,img_512)
         
-    #cv2.imshow('QCA_crop_img',QCA_crop)
-    #cv2.imshow('img_512',img_512)
+    cv2.imshow('QCA_crop_img',cv2.resize(QCA_crop,dsize=(0, 0),fx=0.8, fy=0.8))
+    cv2.imshow('img_512',img_512)
     #cv2.imshow('skeleton',skeleton)
 
     pullback = cv2.imread(os.path.join('..', "2nd data", patend_ids[num], "FFR_pullback.jpg"))[150:,:880,:]
@@ -143,27 +148,32 @@ while(1):
             superpixel_pseudo_mean[label_lsc==i] = superpixel_mean_array[i].astype(np.uint8)
 
 
-        superpixel_var_array = (superpixel_mean_array - np.mean(superpixel_mean_array))**2
+        superpixel_var_array = np.abs(superpixel_mean_array - np.mean(superpixel_mean_array))
+
         #superpixel_std_array = np.abs(superpixel_mean_array - np.mean(superpixel_mean_array))
         #print(number_lsc, superpixel_var_array.shape)
 
         for i in range(number_lsc):
-            superpixel_pseudo_local_var[label_lsc == i] = np.var(img_512[label_lsc == i]).astype(np.uint8)
+            superpixel_pseudo_local_var[label_lsc == i] = np.std(img_512[label_lsc == i])
             superpixel_pseudo_global_var[label_lsc == i] = superpixel_var_array[i].astype(np.uint8)
             #superpixel_pseudo_global_std[label_lsc == i] = superpixel_std_array[i].astype(np.uint8)
 
+        print(np.unique(superpixel_pseudo_local_var))
+        print(np.max(superpixel_pseudo_local_var))
+        superpixel_pseudo_local_var = superpixel_pseudo_local_var.astype(np.uint8)
         #print(superpixel_pseudo_std)
+
 
         cv2.imshow("img_512_coloring",cv2.applyColorMap(cv2.cvtColor(img_512,cv2.COLOR_BGR2GRAY),cv2.COLORMAP_JET))
         superpixel_pseudo_mean = cv2.applyColorMap(superpixel_pseudo_mean, cv2.COLORMAP_JET)
         # superpixel_pseudo_mean[skeleton == 255] = [0,0,255]
         cv2.imshow("mean_coloring",superpixel_pseudo_mean)
-        cv2.imshow("local_var_coloring",cv2.applyColorMap(superpixel_pseudo_local_var,cv2.COLORMAP_JET))
+        cv2.imshow("local_std_coloring",cv2.applyColorMap(superpixel_pseudo_local_var,cv2.COLORMAP_JET))
         #cv2.imshow("gloabl_var_coloring", cv2.applyColorMap(superpixel_pseudo_global_var, cv2.COLORMAP_JET))
 
         superpixel_pseudo_global_var = cv2.cvtColor(superpixel_pseudo_global_var, cv2.COLOR_GRAY2BGR)
-        superpixel_pseudo_global_var[skeleton == 255] = [0,0,255]
-        cv2.imshow("gloabl_var_coloring", superpixel_pseudo_global_var)
+        #superpixel_pseudo_global_var[skeleton == 255] = [0,0,255]
+        cv2.imshow("gloabl_std_coloring", cv2.applyColorMap(superpixel_pseudo_global_var,cv2.COLORMAP_JET))
 
         ### ###
         superpixel_pseudo_intersection_var = np.ones(skeleton.shape, dtype=np.uint8)*255

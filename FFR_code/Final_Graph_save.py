@@ -15,10 +15,11 @@ patend_ids.remove('739092')
 graph_path = [os.path.join('..','2nd data',i,'FFR_pullback.jpg') for i in patend_ids]
 
 def make_graph(graph_img):
-    #cv2.imshow('graph_img', graph_img)
+    cv2.imshow('graph_img', graph_img)
     graph_img=graph_img[170:,:850,:]
     #print(graph_img.shape)
-    cv2.imshow('graph_crop_img', graph_img)
+    #cv2.imshow('graph_crop_img', graph_img)
+
 
     graph_hsv=cv2.cvtColor(graph_img,cv2.COLOR_BGR2HSV)
 
@@ -36,8 +37,8 @@ def make_graph(graph_img):
     yellow_mask=cv2.inRange(graph_hsv,yellow_lower,yellow_upper)
     yellow_mask[-20:,:] = 0 # remove noise
 
-    # cv2.imshow("blue_mask",cv2.cvtColor(blue_mask,cv2.COLOR_GRAY2BGR))
-    # cv2.imshow("yellow_mask", cv2.cvtColor(yellow_mask, cv2.COLOR_GRAY2BGR))
+    cv2.imshow("blue_mask",cv2.cvtColor(blue_mask,cv2.COLOR_GRAY2BGR))
+    cv2.imshow("yellow_mask", cv2.cvtColor(yellow_mask, cv2.COLOR_GRAY2BGR))
 
     for i in range(yellow_mask.shape[1]):
         if yellow_mask[:,i].sum()>10000:
@@ -104,28 +105,32 @@ def make_graph(graph_img):
     extract_graph[lowwer_bound-1:lowwer_bound+2,:,2] = 255
     extract_graph[upper_bound-1:upper_bound+2,:,2] = 255
 
-    #cv2.imshow('mask',yellow_mask)
-    cv2.imshow('graph',extract_graph)
-    # cv2.waitKey()
-
     ### Show as Plt ###
-    # ax=plt.axes()
+    ax=plt.axes()
     #ax.yaxis.set_major_locator(ticker.MultipleLocator(0.01))
-    # plt.plot(x, y)
-    # plt.ylim([0, 1])
-    # plt.show()
+    plt.plot(x, y)
+    plt.ylim([0, 1])
+    plt.show(block=False)
+
+    # cv2.imshow('mask',yellow_mask)
+    cv2.imshow('graph', extract_graph)
+    cv2.waitKey()
 
 
     res = {"X" : x, "Y" : y}
 
     return res
 
-for i,j in enumerate(graph_path):
-    graph_img=cv2.imread(j)
-    res = make_graph(graph_img)
+# for i,j in enumerate(graph_path):
+#
+#     graph_img=cv2.imread(j)
+#     res = make_graph(graph_img)
 
     ### Save as Pickle ###
-    with open(os.path.join("../generated data",patend_ids[i], 'FFR_pullback.pickle'), 'wb') as fw:
-        pickle.dump(res, fw)
+    # with open(os.path.join("../generated data",patend_ids[i], 'FFR_pullback.pickle'), 'wb') as fw:
+    #     pickle.dump(res, fw)
 
+
+graph_img=cv2.imread(os.path.join('..','2nd data',"1745659",'FFR_pullback.jpg'))
+res = make_graph(graph_img)
 
